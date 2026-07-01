@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import Map from 'react-map-gl/maplibre';
-import { GeoJsonLayer } from '@deck.gl/layers';
+import { GeoJsonLayer, TextLayer } from '@deck.gl/layers';
 import { LightingEffect, AmbientLight, PointLight } from '@deck.gl/core';
 import dynamic from 'next/dynamic';
 import { normalizeGeographicKey } from '@/lib/normalizeGeographicKey';
@@ -66,6 +66,23 @@ const pointLight = new PointLight({
 });
 
 const lightingEffect = new LightingEffect({ ambientLight, pointLight });
+
+const getCentroid = (coordinates: any[]): [number, number] => {
+  let sumX = 0, sumY = 0, count = 0;
+  const traverse = (coords: any[]) => {
+    if (typeof coords[0] === 'number') {
+      sumX += coords[0];
+      sumY += coords[1];
+      count++;
+    } else {
+      for (let i = 0; i < coords.length; i++) {
+        traverse(coords[i]);
+      }
+    }
+  };
+  traverse(coordinates);
+  return count > 0 ? [sumX / count, sumY / count] : [78.9629, 22.5937];
+};
 
 interface MapComponentProps {
   category: string;
@@ -329,13 +346,64 @@ export default function MapComponent({
     });
   }, [topoGeoData, activeMetric, activeDict, maxVal, getColor, onSelectState, onSelectDistrict, setTooltip]);
 
+  const textLayer = useMemo(() => {
+    if (!topoGeoData) return null;
+
+    // Show labels if a state is selected OR zoom is high enough to avoid clutter
+    const showLabels = selectedState !== null || viewState.zoom > 5.5;
+    if (!showLabels) return null;
+
+    const textFeatures = topoGeoData.features.map((f: any) => {
+      const name = f.properties?.district || f.properties?.st_nm || '';
+      const stateName = f.properties?.st_nm || f.properties?.state || '';
+      
+      // Skip district label if selectedState is active but this district belongs to another state
+      if (selectedState && normalizeGeographicKey(stateName) !== normalizeGeographicKey(selectedState)) {
+        return null;
+      }
+
+      const key = normalizeGeographicKey(name);
+      const metrics = activeDict.get(key);
+      const val = metrics ? (metrics[activeMetric] || 0) : 0;
+      
+      const centroid = getCentroid(f.geometry.coordinates);
+
+      return {
+        name,
+        text: `${name}\n${val.toLocaleString()}`,
+        position: centroid,
+        value: val
+      };
+    }).filter(Boolean);
+
+    return new TextLayer({
+      id: 'india-text-layer',
+      data: textFeatures,
+      pickable: false,
+      getPosition: (d: any) => d.position,
+      getText: (d: any) => d.text,
+      getSize: selectedState ? 12 : 9,
+      getAngle: 0,
+      getColor: [255, 255, 255, 240],
+      getAlignmentBaseline: 'center',
+      getJustification: 'center',
+      background: true,
+      backgroundColor: [9, 9, 11, 200], // Dark charcoal background
+      backgroundPadding: [6, 4, 6, 4],
+      updateTriggers: {
+        getText: [activeMetric, activeDict],
+        getSize: [selectedState]
+      }
+    });
+  }, [topoGeoData, viewState.zoom, activeMetric, activeDict, selectedState]);
+
   return (
     <div className="relative w-full h-full">
       <DeckGL
         viewState={viewState}
         onViewStateChange={(e: any) => setViewState(e.viewState)}
         controller={true}
-        layers={[mapLayer].filter(Boolean)}
+        layers={[mapLayer, textLayer].filter(Boolean)}
         effects={[lightingEffect]}
         getCursor={({ isHovering }) => (isHovering ? 'pointer' : 'default')}
       >
