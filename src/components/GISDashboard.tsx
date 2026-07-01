@@ -5,7 +5,9 @@ import {
   Activity, 
   ShieldAlert, 
   Trash2, 
-  ChevronRight, 
+  ChevronRight,
+  ChevronDown,
+  ChevronUp,
   Globe, 
   HeartPulse, 
   Sparkles, 
@@ -76,6 +78,9 @@ export default function GISDashboard() {
   const [selectedState, setSelectedState] = useState<string | null>(null);
   const [selectedDistrict, setSelectedDistrict] = useState<string | null>(null);
   const [tooltip, setTooltip] = useState<any>(null);
+
+  // KPI ribbon collapsed by default — user can toggle open
+  const [kpiOpen, setKpiOpen] = useState(false);
 
   // Slicers/Range Filters: 'all' | 'high_screening' | 'alert_only'
   const [volumeSlicer, setVolumeSlicer] = useState<'all' | 'high_screening' | 'alert_only'>('all');
@@ -402,59 +407,95 @@ export default function GISDashboard() {
         )}
       </div>
 
-      {/* Summary KPI Ribbon */}
-      <div className="px-6 py-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 bg-zinc-950/60 border-b-4 border-black">
-        {/* Card 1: Total Screened */}
-        <div className="bg-zinc-900 border-3 border-black p-4 rounded shadow-[3px_3px_0_0_#000] flex items-center justify-between group hover:-translate-y-0.5 transition-all">
-          <div>
-            <span className="text-[10px] font-black text-zinc-500 tracking-widest uppercase">Total Screened</span>
-            <h3 className="text-xl font-black text-white mt-1">
-              {totalScreened.toLocaleString()}
-            </h3>
+      {/* KPI Summary Ribbon — collapsible */}
+      <div className="bg-zinc-950/60 border-b-4 border-black">
+        {/* Toggle bar — always visible, shows inline mini-stats */}
+        <button
+          onClick={() => setKpiOpen(o => !o)}
+          className="w-full px-6 py-2 flex items-center gap-4 hover:bg-zinc-900/60 transition-colors group"
+        >
+          <span className="text-[10px] font-black tracking-widest uppercase text-zinc-500 group-hover:text-zinc-300 transition-colors shrink-0">
+            KPI Summary
+          </span>
+          {/* Inline mini pill stats — always visible when collapsed */}
+          <div className="flex flex-wrap items-center gap-3 flex-1 overflow-hidden">
+            <span className="text-[10px] font-black text-zinc-400">
+              Screened: <span className="text-white">{totalScreened.toLocaleString()}</span>
+            </span>
+            <span className="text-[10px] text-zinc-700">·</span>
+            <span className="text-[10px] font-black text-zinc-400">
+              Positives: <span className="text-red-400">{totalPositives.toLocaleString()}</span>
+            </span>
+            <span className="text-[10px] text-zinc-700">·</span>
+            <span className="text-[10px] font-black text-zinc-400">
+              Treated: <span className="text-emerald-400">{totalTreated.toLocaleString()}</span>
+            </span>
+            <span className="text-[10px] text-zinc-700">·</span>
+            <span className="text-[10px] font-black text-zinc-400">
+              {activeMetricMeta?.label || activeMetric}: <span className="text-yellow-400">{activeValue.toLocaleString()}</span>
+            </span>
           </div>
-          <div className="w-10 h-10 rounded-lg bg-zinc-800 border-2 border-black flex items-center justify-center text-purple-400 group-hover:scale-110 transition-transform">
-            <Users className="w-5 h-5" />
+          <div className="ml-auto shrink-0 text-zinc-500 group-hover:text-zinc-200 transition-colors">
+            {kpiOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           </div>
-        </div>
+        </button>
 
-        {/* Card 2: Positive / Reactive cases */}
-        <div className="bg-zinc-900 border-3 border-black p-4 rounded shadow-[3px_3px_0_0_#000] flex items-center justify-between group hover:-translate-y-0.5 transition-all">
-          <div>
-            <span className="text-[10px] font-black text-red-500 tracking-widest uppercase">Positives &amp; Reactive</span>
-            <h3 className="text-xl font-black text-red-400 mt-1">
-              {totalPositives.toLocaleString()}
-            </h3>
-          </div>
-          <div className="w-10 h-10 rounded-lg bg-red-950/30 border-2 border-red-500/50 flex items-center justify-center text-red-400 group-hover:scale-110 transition-transform">
-            <AlertTriangle className="w-5 h-5 animate-pulse" />
-          </div>
-        </div>
+        {/* Expandable card grid */}
+        {kpiOpen && (
+          <div className="px-6 pb-4 pt-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 border-t border-zinc-800">
+            {/* Card 1: Total Screened */}
+            <div className="bg-zinc-900 border-3 border-black p-4 rounded shadow-[3px_3px_0_0_#000] flex items-center justify-between group hover:-translate-y-0.5 transition-all">
+              <div>
+                <span className="text-[10px] font-black text-zinc-500 tracking-widest uppercase">Total Screened</span>
+                <h3 className="text-xl font-black text-white mt-1">
+                  {totalScreened.toLocaleString()}
+                </h3>
+              </div>
+              <div className="w-10 h-10 rounded-lg bg-zinc-800 border-2 border-black flex items-center justify-center text-purple-400 group-hover:scale-110 transition-transform">
+                <Users className="w-5 h-5" />
+              </div>
+            </div>
 
-        {/* Card 3: Treated / Linked to ART */}
-        <div className="bg-zinc-900 border-3 border-black p-4 rounded shadow-[3px_3px_0_0_#000] flex items-center justify-between group hover:-translate-y-0.5 transition-all">
-          <div>
-            <span className="text-[10px] font-black text-emerald-500 tracking-widest uppercase">Treated &amp; Linked</span>
-            <h3 className="text-xl font-black text-emerald-400 mt-1">
-              {totalTreated.toLocaleString()}
-            </h3>
-          </div>
-          <div className="w-10 h-10 rounded-lg bg-emerald-950/30 border-2 border-emerald-500/50 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform">
-            <HeartPulse className="w-5 h-5" />
-          </div>
-        </div>
+            {/* Card 2: Positive / Reactive cases */}
+            <div className="bg-zinc-900 border-3 border-black p-4 rounded shadow-[3px_3px_0_0_#000] flex items-center justify-between group hover:-translate-y-0.5 transition-all">
+              <div>
+                <span className="text-[10px] font-black text-red-500 tracking-widest uppercase">Positives &amp; Reactive</span>
+                <h3 className="text-xl font-black text-red-400 mt-1">
+                  {totalPositives.toLocaleString()}
+                </h3>
+              </div>
+              <div className="w-10 h-10 rounded-lg bg-red-950/30 border-2 border-red-500/50 flex items-center justify-center text-red-400 group-hover:scale-110 transition-transform">
+                <AlertTriangle className="w-5 h-5 animate-pulse" />
+              </div>
+            </div>
 
-        {/* Card 4: Active Metric Status */}
-        <div className="bg-yellow-500 border-3 border-black p-4 rounded shadow-[3px_3px_0_0_#000] flex items-center justify-between group hover:-translate-y-0.5 transition-all">
-          <div>
-            <span className="text-[10px] font-black text-black/60 tracking-widest uppercase">Active: {activeMetricMeta?.label || activeMetric}</span>
-            <h3 className="text-xl font-black text-black mt-1">
-              {activeValue.toLocaleString()}
-            </h3>
+            {/* Card 3: Treated / Linked to ART */}
+            <div className="bg-zinc-900 border-3 border-black p-4 rounded shadow-[3px_3px_0_0_#000] flex items-center justify-between group hover:-translate-y-0.5 transition-all">
+              <div>
+                <span className="text-[10px] font-black text-emerald-500 tracking-widest uppercase">Treated &amp; Linked</span>
+                <h3 className="text-xl font-black text-emerald-400 mt-1">
+                  {totalTreated.toLocaleString()}
+                </h3>
+              </div>
+              <div className="w-10 h-10 rounded-lg bg-emerald-950/30 border-2 border-emerald-500/50 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform">
+                <HeartPulse className="w-5 h-5" />
+              </div>
+            </div>
+
+            {/* Card 4: Active Metric Status */}
+            <div className="bg-yellow-500 border-3 border-black p-4 rounded shadow-[3px_3px_0_0_#000] flex items-center justify-between group hover:-translate-y-0.5 transition-all">
+              <div>
+                <span className="text-[10px] font-black text-black/60 tracking-widest uppercase">Active: {activeMetricMeta?.label || activeMetric}</span>
+                <h3 className="text-xl font-black text-black mt-1">
+                  {activeValue.toLocaleString()}
+                </h3>
+              </div>
+              <div className="w-10 h-10 rounded-lg bg-black border-2 border-black flex items-center justify-center text-yellow-500 group-hover:scale-110 transition-transform">
+                <Activity className="w-5 h-5" />
+              </div>
+            </div>
           </div>
-          <div className="w-10 h-10 rounded-lg bg-black border-2 border-black flex items-center justify-center text-yellow-500 group-hover:scale-110 transition-transform">
-            <Activity className="w-5 h-5" />
-          </div>
-        </div>
+        )}
       </div>
 
       {/* Main Command Dashboard Panels */}
