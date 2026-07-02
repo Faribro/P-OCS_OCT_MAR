@@ -253,9 +253,9 @@ export default function MapComponent({
   }, [activeMetric]);
 
   const getColor = useCallback((metrics: any): [number, number, number, number] => {
-    if (!metrics) return [30, 41, 59, 140]; // Dark Slate-800 for empty
+    if (!metrics) return [241, 245, 249, 140]; // Light Slate-100 for empty
     const val = metrics[activeMetric] || 0;
-    if (val === 0) return [30, 41, 59, 140];
+    if (val === 0) return [241, 245, 249, 140];
 
     const ratio = Math.min(val / maxVal, 1);
 
@@ -291,7 +291,7 @@ export default function MapComponent({
       extruded: true,
       wireframe: true,
       lineWidthMinPixels: 1.5,
-      getLineColor: [255, 255, 255, 25],
+      getLineColor: [0, 0, 0, 30],
       getFillColor: (f: any) => {
         const name = f.properties?.district || f.properties?.st_nm || '';
         const key = normalizeGeographicKey(name);
@@ -384,11 +384,11 @@ export default function MapComponent({
       getText: (d: any) => d.text,
       getSize: selectedState ? 12 : 9,
       getAngle: 0,
-      getColor: [255, 255, 255, 240],
+      getColor: [0, 0, 0, 240],
       getAlignmentBaseline: 'center',
       getJustification: 'center',
       background: true,
-      backgroundColor: [9, 9, 11, 200], // Dark charcoal background
+      backgroundColor: [255, 255, 255, 220], // Light background
       backgroundPadding: [6, 4, 6, 4],
       updateTriggers: {
         getText: [activeMetric, activeDict],
@@ -410,13 +410,13 @@ export default function MapComponent({
         <Map
           reuseMaps
           mapLib={import('maplibre-gl')}
-          mapStyle="https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
+          mapStyle="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
         />
       </DeckGL>
 
       {loading && (
-        <div className="absolute top-4 left-4 z-50 px-4 py-2 bg-black/80 border border-zinc-800 text-xs font-semibold text-zinc-300 rounded-md shadow-2xl backdrop-blur-md flex items-center gap-2">
-          <svg className="animate-spin h-3.5 w-3.5 text-indigo-500" fill="none" viewBox="0 0 24 24">
+        <div className="absolute top-4 left-4 z-50 px-4 py-2 bg-white/90 border border-slate-200 text-xs font-semibold text-slate-700 rounded-md shadow-2xl backdrop-blur-md flex items-center gap-2">
+          <svg className="animate-spin h-3.5 w-3.5 text-indigo-600" fill="none" viewBox="0 0 24 24">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
           </svg>
