@@ -315,7 +315,7 @@ export default function MapComponent({
       if (!cached) return;
       const metrics = activeDict.get(key);
       const val = metrics ? (metrics[activeMetric] || 0) : 0;
-      labels.push({ name: displayName, value: val, position: cached.center, isState: true });
+      if (val > 0) labels.push({ name: displayName, value: val, position: cached.center, isState: true });
     });
     return labels;
   }, [topoGeoData, geoMetadata, activeDict, activeMetric]);
@@ -339,7 +339,7 @@ export default function MapComponent({
 
       const metrics = activeDict.get(key);
       const val = metrics ? (metrics[activeMetric] || 0) : 0;
-      labels.push({ name: districtName, value: val, position: cached.center, isState: false });
+      if (val > 0) labels.push({ name: districtName, value: val, position: cached.center, isState: false });
     });
     return labels;
   }, [topoGeoData, geoMetadata, activeDict, activeMetric, selectedState]);
