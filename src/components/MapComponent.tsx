@@ -315,7 +315,7 @@ export default function MapComponent({
       if (!cached) return;
       const metrics = activeDict.get(key);
       const val = metrics ? (metrics[activeMetric] || 0) : 0;
-      if (val > 0) labels.push({ name: displayName, value: val, position: cached.center, isState: true });
+      if (val > 0) labels.push({ name: displayName, value: val, position: cached.center, isState: true, hivConfirmed: metrics?.hiv_confirmed_positive || 0 });
     });
     return labels;
   }, [topoGeoData, geoMetadata, activeDict, activeMetric]);
@@ -339,7 +339,7 @@ export default function MapComponent({
 
       const metrics = activeDict.get(key);
       const val = metrics ? (metrics[activeMetric] || 0) : 0;
-      if (val > 0) labels.push({ name: districtName, value: val, position: cached.center, isState: false });
+      if (val > 0) labels.push({ name: districtName, value: val, position: cached.center, isState: false, hivConfirmed: metrics?.hiv_confirmed_positive || 0 });
     });
     return labels;
   }, [topoGeoData, geoMetadata, activeDict, activeMetric, selectedState]);
@@ -462,10 +462,12 @@ export default function MapComponent({
         return [d.position[0], d.position[1], elev + 6000];
       },
       getText: (d: any) => {
-        const valuePart = d.value > 0 ? d.value.toLocaleString() : '—';
-        const namePart = depthLevel === 'state'
-          ? d.name.toUpperCase()
-          : d.name;
+        const namePart = depthLevel === 'state' ? d.name.toUpperCase() : d.name;
+        const valuePart = d.value.toLocaleString();
+        if (activeMetric === 'hiv_screened' && d.value > 0) {
+          const prevalence = ((d.hivConfirmed / d.value) * 100).toFixed(2);
+          return `${namePart}\n${valuePart} | Prev: ${prevalence}%`;
+        }
         return `${namePart}\n${valuePart}`;
       },
       getSize: depthLevel === 'state' ? 13 : 11,
