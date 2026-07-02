@@ -181,7 +181,7 @@ export default function GISDashboard() {
   }
 
   return (
-    <div className="flex-1 bg-slate-50 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:4rem_4rem] text-slate-900 flex flex-col min-h-screen">
+    <div className="h-screen overflow-hidden bg-slate-50 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:4rem_4rem] text-slate-900 flex flex-col">
       
       {/* Header */}
       <header className="border-b-4 border-black bg-white px-6 py-4 flex flex-col xl:flex-row xl:items-center justify-between gap-4 z-40 shadow-[0_4px_0_0_#000]">
@@ -360,10 +360,9 @@ export default function GISDashboard() {
         )}
       </div>
 
-      {/* Main Command Dashboard Panels */}
-      <div className="flex-1 overflow-hidden relative flex flex-col min-h-[600px]">
-        {/* Center Panel: Map area */}
-        <div className="flex-1 relative w-full h-full overflow-hidden">
+      {/* Main Map Panel — fills all remaining vertical space */}
+      <div className="flex-1 overflow-hidden relative" style={{ minHeight: 0 }}>
+        <div className="w-full h-full relative overflow-hidden">
           <MapComponent
             category={activeCategory}
             activeMetric={activeMetric}
