@@ -121,7 +121,7 @@ export default function GISDashboard() {
         <div className="flex items-center gap-2 mr-4">
           <Sparkles className="w-4 h-4 text-indigo-500" />
           <h1 className="text-sm font-black tracking-tight text-slate-900 whitespace-nowrap">
-            P &amp; OCS · Data Compilation · OCT–MAR
+            P &amp; OCS · Data Compilation · OCT 25 – MAR 26
           </h1>
         </div>
 
